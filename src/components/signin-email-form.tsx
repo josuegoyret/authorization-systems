@@ -11,6 +11,7 @@ const formSchema = z.object({
   email: z
     .string()
     .email("Enter a valid email")
+    .trim()
     .min(1, { message: "Complete with your email" }),
 });
 
