@@ -17,4 +17,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   adapter: PrismaAdapter(prisma),
+  pages: {
+    signIn: "/signin",
+  },
+  session: {
+    strategy: "database",
+    maxAge: 60 * 60 * 24 * 7,
+  },
 });
