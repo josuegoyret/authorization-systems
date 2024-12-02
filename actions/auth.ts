@@ -1,6 +1,6 @@
 "use server";
 
-import { signIn } from "~/auth";
+import { signIn, signOut } from "~/auth";
 
 export const signWithGoogle = async () => {
   await signIn("google", {
@@ -17,5 +17,11 @@ export const signWithGitHub = async () => {
 export const signWithTwitter = async () => {
   await signIn("twitter", {
     redirectTo: "/",
+  });
+};
+
+export const handleSignOut = async () => {
+  await signOut({
+    redirectTo: "/access",
   });
 };
