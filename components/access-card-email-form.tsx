@@ -6,16 +6,22 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { signWithEmail } from "~/actions/auth";
 
 const formSchema = z.object({
   email: z
     .string()
-    .email("Enter a valid email")
     .trim()
-    .min(1, { message: "Complete with your email" }),
+    .min(1, { message: "Complete with your email" })
+    .email("Enter a valid email"),
 });
 
 const AccessCardEmailForm = () => {
+  const [sending, setSending] = useState<boolean>(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -23,8 +29,17 @@ const AccessCardEmailForm = () => {
     },
   });
 
-  const onSubmit = ({ email }: z.infer<typeof formSchema>) =>
-    console.log({ email });
+  const onSubmit = async ({ email }: z.infer<typeof formSchema>) => {
+    setSending(true);
+    try {
+      await signWithEmail({ email });
+      toast(`We sent an email to ${email} with a magic link to access.`);
+    } catch (error) {
+      console.error(error);
+      toast(`Something went wrong. Please, try again`);
+    }
+    setSending(false);
+  };
 
   return (
     <Form {...form}>
@@ -49,6 +64,7 @@ const AccessCardEmailForm = () => {
           )}
         />
         <Button type="submit" className="w-full">
+          {sending && <Loader2 className="h-4 w-4 animate-spin" />}
           Join with Magic Link
         </Button>
       </form>
