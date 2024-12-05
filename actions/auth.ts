@@ -20,6 +20,14 @@ export const signWithTwitter = async () => {
   });
 };
 
+export const signWithEmail = async ({ email }: { email: string }) => {
+  await signIn("sendgrid", {
+    email,
+    redirectTo: "/",
+    redirect: false,
+  });
+};
+
 export const handleSignOut = async () => {
   await signOut({
     redirectTo: "/access",

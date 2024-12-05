@@ -1,4 +1,4 @@
-import { createTransport } from "nodemailer";
+import { SENDGRID_BASE_URL } from "./contants";
 
 interface EmailParams {
   magicLink: string;
@@ -158,7 +158,7 @@ export function getEmailHtmlWithLink({ magicLink }: EmailParams): string {
       <div
          style="font-family:Public Sans;font-size:13px;line-height:1;text-align:left;color:#000000;"
       ><p style="display:flex;align-items:center">
-          <span style="margin-left:8px">Sent with Authorization Systems (all rights reserved)</span>
+          <span>Sent with Authorization Systems (all rights reserved)</span>
             </p></div>
     
                 </td>
@@ -194,32 +194,38 @@ export function getEmailHtmlWithLink({ magicLink }: EmailParams): string {
   `;
 }
 
-interface CreateTransportAndSendEmailProps {
-  // eslint-disable-next-line
-  smtpEmailServer: any;
-  emailFrom: string | undefined;
+interface ProstVerificationRequestToSendgridProps {
+  apiKey: string;
+  emailFrom: string;
   emailTo: string;
   magicLink: string;
 }
 
-export const createTransportAndSendEmail = async ({
-  smtpEmailServer,
+export const postVerificationRequestToSendgrid = async ({
+  apiKey,
   emailFrom,
   emailTo,
   magicLink,
-}: CreateTransportAndSendEmailProps) => {
-  const transport = createTransport(smtpEmailServer);
-
-  try {
-    await transport.sendMail({
-      from: emailFrom,
-      to: emailTo,
+}: ProstVerificationRequestToSendgridProps) => {
+  const res = await fetch(`${SENDGRID_BASE_URL}/mail/send`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      personalizations: [{ to: [{ email: emailTo }] }],
+      from: { email: emailFrom },
       subject: getEmailSubject(),
-      text: getEmailPlainTextWithLink({ magicLink }),
-      html: getEmailHtmlWithLink({ magicLink }),
-    });
-  } catch (error) {
-    console.error("Error sending verification email: ", error);
-    throw new Error("Error sending verification email");
-  }
+      content: [
+        { type: "text/plain", value: getEmailPlainTextWithLink({ magicLink }) },
+        { type: "text/html", value: getEmailHtmlWithLink({ magicLink }) },
+      ],
+    }),
+  });
+
+  if (!res.ok)
+    throw new Error(
+      "Sendgrid error in veriquetion request post: " + (await res.text())
+    );
 };

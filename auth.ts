@@ -2,26 +2,29 @@ import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import Twitter from "next-auth/providers/twitter";
-import Nodemailer from "next-auth/providers/nodemailer";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "~/lib/prisma";
-import { createTransportAndSendEmail } from "~/lib/email";
+import { postVerificationRequestToSendgrid } from "./lib/email";
+import SendGrid from "next-auth/providers/sendgrid";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Google,
     GitHub,
     Twitter,
-    Nodemailer({
+    SendGrid({
       server: process.env.EMAIL_SERVER,
       from: process.env.EMAIL_FROM,
       async sendVerificationRequest({
         identifier: emailTo,
         url: magicLink,
-        provider: { server: smtpEmailServer, from: emailFrom },
+        provider: { apiKey, from: emailFrom },
       }) {
-        await createTransportAndSendEmail({
-          smtpEmailServer,
+        if (!apiKey) throw new Error("Missing email server");
+        if (!emailFrom) throw new Error("Missing email from");
+
+        await postVerificationRequestToSendgrid({
+          apiKey,
           emailFrom,
           emailTo,
           magicLink,
@@ -31,7 +34,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   adapter: PrismaAdapter(prisma),
   pages: {
-    signIn: "/signin",
+    signIn: "/access",
   },
   session: {
     strategy: "database",
