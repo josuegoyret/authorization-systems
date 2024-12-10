@@ -1,3 +1,14 @@
+/**
+ * From prisma.io/docs:
+ *
+ * Prisma ORM: is a next-generation Node.js and Typescript ORM that unlocks a new level of developer
+ * experience when working with databases thanks to its intuitive data model, automated migrations,
+ * type-safety & auto-completion
+ *
+ * Primsa Accelerate: is a global database cache with ascalable connection pooling to make your queries fast
+ * (scale database connection, enable set caching strategy at query level and work at edge)
+ */
+
 // driver configutarion imports: -----------------
 
 // import { PrismaClient } from "@prisma/client";
